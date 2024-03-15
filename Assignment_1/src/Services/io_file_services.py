@@ -35,4 +35,26 @@ def save_graph(graph: DirectedGraph, file_path):
     :param graph: The Graph to save data from
     :param file_path: The file path of the file to save to
     """
-    pass
+    try:
+        with open(file_path, 'w') as file:
+            content = ""
+            content += f"{graph.vertices_count()} {graph.edges_count()}\n"
+            vertex_iterator = graph.vertex_iterator()
+            while vertex_iterator.valid():
+                vertex = vertex_iterator.getCurrent()
+
+                # Printing for each vertex only one set of edges ( Inbound / Outbound ) to avoid duplicates
+                # Inbound Edges
+                inbound_iterator = graph.inbound_iterator(vertex.number)
+                while inbound_iterator.valid():
+                    edge = inbound_iterator.getCurrent()
+                    content += f"{edge.source.number} {edge.target.number} {graph.get_cost(edge.source.number, edge.target.number)}\n"
+                    inbound_iterator.next()
+
+                # Getting the next vertex
+                vertex_iterator.next()
+
+            file.write(content)
+
+    except Exception as exc:
+        raise DirectedGraphException("Encountered problems when writing to the file! Operation Aborted!")

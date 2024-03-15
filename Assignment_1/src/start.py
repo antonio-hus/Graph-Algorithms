@@ -20,7 +20,7 @@ def start():
     # GENERATE RANDOM GRAPH DATA
     # Uncomment the function to get random graph data at program startup
     # random_graph1 = generate_graph(7, 20)
-    # random_graph2 generate_graph(6, 40)
+    # random_graph2 = generate_graph(6, 40)
     # Uncomment the save to file to save the random graphs to their files
     # save_graph(random_graph1, "../random_graph1.txt")
     # save_graph(random_graph2, "../random_graph2.txt")
@@ -32,12 +32,8 @@ def start():
     # read_graph(graph, "../graph100k.txt")
     # read_graph(graph, "../graph1m.txt")
 
-    # SAVE GRAPH DATA TO FILES
-    # Uncomment the functions with the appropriate file_path to save to
-    # save_graph(graph, "../graph1k_modif.txt")
-    # save_graph(graph, "../graph10k_modif.txt")
-    # save_graph(graph, "../graph100k_modif.txt")
-    # save_graph(graph, "../graph1m_modif.txt")
+    # GET SMALL STARTUP DATA FROM THIS FILE
+    read_graph(graph, "../graphsmall.txt")
 
     # UI CONTROLLER
     display.welcome_screen()
@@ -46,6 +42,13 @@ def start():
             display.main_menu()
         except InterruptedError:
             break
+
+    # SAVE GRAPH DATA TO FILES
+    # Uncomment the functions with the appropriate file_path to save to
+    # save_graph(graph, "../graph1k_modif.txt")
+    # save_graph(graph, "../graph10k_modif.txt")
+    # save_graph(graph, "../graph100k_modif.txt")
+    # save_graph(graph, "../graph1m_modif.txt")
 
 
 # RUN FROM THE CURRENT FILE
