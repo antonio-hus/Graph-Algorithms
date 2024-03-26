@@ -8,7 +8,7 @@ from random import randint
 
 
 # GRAPH GENERATOR IMPLEMENTATION
-def generate_graph(vertices_count: int, edges_count: int) -> DirectedGraph:
+def generate_graph(vertices_count: int, edges_count: int):
     """
     Creates and returns a DirectedGraph having a given number of vertices and edges.
     - Creates random vertices
@@ -16,12 +16,17 @@ def generate_graph(vertices_count: int, edges_count: int) -> DirectedGraph:
     - Assigns random costs to these edges
 
     Raises DirectedGraphException for negative value of vertices_count or edges_count
+    Raises DirectedGraphException - invalid vertices / edges configurations ( too many edges )
+    Otherwise, returns the generated graph
 
     :param vertices_count: The number of vertices to add
     :param edges_count: The number of edges to add
     """
     if vertices_count < 0 or edges_count < 0:
         raise DirectedGraphException("Vertices or edges count cannot be negative")
+
+    if edges_count > vertices_count * (vertices_count - 1):
+        raise DirectedGraphException("Invalid Graph. Maximum number of edges is no.vertices * (no.vertices - 1)")
 
     graph = DirectedGraph()
 
