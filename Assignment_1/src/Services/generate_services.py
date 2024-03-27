@@ -3,6 +3,7 @@
 # Imports Section
 # --- Domain ---
 from Assignment_1.src.Domain.directed_graph import DirectedGraph, DirectedGraphException
+from Assignment_1.src.Domain.undirected_graph import UnDirectedGraph, UnDirectedGraphException
 # --- Misc ---
 from random import randint
 
@@ -22,13 +23,21 @@ def generate_graph(vertices_count: int, edges_count: int):
     :param vertices_count: The number of vertices to add
     :param edges_count: The number of edges to add
     """
-    if vertices_count < 0 or edges_count < 0:
-        raise DirectedGraphException("Vertices or edges count cannot be negative")
-
-    if edges_count > vertices_count * (vertices_count - 1):
-        raise DirectedGraphException("Invalid Graph. Maximum number of edges is no.vertices * (no.vertices - 1)")
 
     graph = DirectedGraph()
+    # graph = UnDirectedGraph()
+
+    if vertices_count < 0 or edges_count < 0:
+        if isinstance(graph, DirectedGraph):
+            raise DirectedGraphException("Vertices or edges count cannot be negative")
+        elif isinstance(graph, UnDirectedGraph):
+            raise UnDirectedGraphException("Vertices or edges count cannot be negative")
+
+    if edges_count > vertices_count * (vertices_count - 1):
+        if isinstance(graph, DirectedGraph):
+            raise DirectedGraphException("Invalid Graph. Maximum number of edges is no.vertices * (no.vertices - 1)")
+        elif isinstance(graph, UnDirectedGraph):
+            raise UnDirectedGraphException("Invalid Graph. Maximum number of edges is no.vertices * (no.vertices - 1)")
 
     # Adding the Vertices numbered 1...n
     for i in range(1, vertices_count+1):

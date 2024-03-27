@@ -2,20 +2,24 @@
 
 # Imports Section
 # --- Domain ---
+from Assignment_1.src.Domain.vertex import Vertex
+from Assignment_1.src.Domain.edge import Edge
 from Assignment_1.src.Domain.directed_graph import DirectedGraph
+from Assignment_1.src.Domain.undirected_graph import UnDirectedGraph
 
 # --- Services ---
 from Assignment_1.src.Services.generate_services import *
 from Assignment_1.src.Services.io_file_services import *
+from Assignment_1.src.Services.connected_component_services import *
 
 
 # UI Class Implementation
 class UI:
 
     # CLASS INITIALIZATION
-    def __init__(self, graph: DirectedGraph):
+    def __init__(self, graph):
         """
-        User Interface displays data and allows interactivity with a given DirectedGraph
+        User Interface displays data and allows interactivity with a given DirectedGraph or UnDirectedGraph
         :param graph: The specified graph to analyze and modify
         """
         self.__graph = graph
@@ -52,6 +56,7 @@ class UI:
         print("2. Particular Vertex Statistics")
         print("3. Edge Operations")
         print("4. Modify the Graph Structure")
+        print("5. Connected Components via DFS ( UnDirectedGraphs Only )")
         print("0. Exit")
 
         op = input('>')
@@ -65,6 +70,8 @@ class UI:
             self.edge_operations_screen()
         elif op == '4':
             self.graph_modification_screen()
+        elif op == '5':
+            self.connected_components_screen()
         else:
             pass
 
@@ -110,21 +117,29 @@ class UI:
                 raise Exception("Vertex is not inside the graph!")
 
             print("Here are the statistics of your vertex: \n")
-            inbound, outbound = self.__graph.degree(op)
+            if isinstance(self.__graph, DirectedGraph):
+                inbound, outbound = self.__graph.degree(op)
+                print(f"Inbound Edges: {inbound}")
+                edges_iter = self.__graph.inbound_iterator(op)
+                while edges_iter.valid():
+                    print(edges_iter.getCurrent())
+                    edges_iter.next()
+                print()
 
-            print(f"Inbound Edges: {inbound}")
-            edges_iter = self.__graph.inbound_iterator(op)
-            while edges_iter.valid():
-                print(edges_iter.getCurrent())
-                edges_iter.next()
-            print()
-
-            print(f"Outbound Edges: {outbound}")
-            edges_iter = self.__graph.outbound_iterator(op)
-            while edges_iter.valid():
-                print(edges_iter.getCurrent())
-                edges_iter.next()
-            print()
+                print(f"Outbound Edges: {outbound}")
+                edges_iter = self.__graph.outbound_iterator(op)
+                while edges_iter.valid():
+                    print(edges_iter.getCurrent())
+                    edges_iter.next()
+                print()
+            elif isinstance(self.__graph, UnDirectedGraph):
+                degree = self.__graph.degree(op)
+                print(f"Edges: {degree}")
+                edges_iter = self.__graph.edges_iterator(op)
+                while edges_iter.valid():
+                    print(edges_iter.getCurrent())
+                    edges_iter.next()
+                print()
 
         except Exception as exc:
             print(f"There has been an error! {exc}")
@@ -281,3 +296,19 @@ class UI:
         print("Press 'Enter' to go back to Main Menu")
         input()
 
+    def connected_components_screen(self):
+        UI.clear_screen()
+        print("Here is the list of all connected components")
+
+        k = 0
+        for component in connected_components(self.__graph):
+            k += 1
+            print(f"Component {k}: ")
+            for vertex in component:
+                print(vertex, end=" ")
+            print()
+            print("-------------------------")
+
+        print()
+        print("Press 'Enter' to go back to Main Menu")
+        input()

@@ -2,18 +2,20 @@
 # Imports Section
 from .edge import Edge
 from .vertex import Vertex
+from .edge import UEdge
+from .directed_graph import DirectedGraph
 
 
 # EXCEPTION CLASS IMPLEMENTATION
-class DirectedGraphException(Exception):
+class UnDirectedGraphException(Exception):
     """
     Custom Exception Class for the DirectedGraph
     """
     pass
 
 
-# ITERATOR CLASSES FOR THE DIRECTEDGRAPH IMPLEMENTATION
-class DirectedGraphVertexIterator:
+# ITERATOR CLASSES FOR THE UNDIRECTEDGRAPH IMPLEMENTATION
+class UnDirectedGraphVertexIterator:
     def __init__(self, graph):
         """
         Parses using the index the set of all vertices from the specified DirectedGraph
@@ -30,12 +32,12 @@ class DirectedGraphVertexIterator:
     def next(self):
         """
         Gets the next element's index if in bounds,
-        Otherwise raises a DirectedGraphException
+        Otherwise raises an UnDirectedGraphException
         """
         if self.valid():
             self.__index += 1
         else:
-            raise DirectedGraphException("Out of vertices list bounds!")
+            raise UnDirectedGraphException("Out of vertices list bounds!")
 
     def valid(self):
         """
@@ -50,12 +52,12 @@ class DirectedGraphVertexIterator:
         return self.__elements[self.__index]
 
 
-class DirectedGraphOutboundIterator:
+class UnDirectedGraphEdgesIterator:
     def __init__(self, graph, vertex: int):
         """
         Parses using the index the set of all inbound edges to a given vertex, from the specified DirectedGraph
         """
-        self.__elements = graph.outbound_edges(vertex)
+        self.__elements = graph.get_edges(vertex)
         self.__index = 0
 
     def first(self):
@@ -67,12 +69,12 @@ class DirectedGraphOutboundIterator:
     def next(self):
         """
         Gets the next element's index if in bounds,
-        Otherwise raises a DirectedGraphException
+        Otherwise raises an UnDirectedGraphException
         """
         if self.valid():
             self.__index += 1
         else:
-            raise DirectedGraphException("Out of outbound edges list bounds!")
+            raise UnDirectedGraphException("Out of edges list bounds!")
 
     def valid(self):
         """
@@ -87,64 +89,26 @@ class DirectedGraphOutboundIterator:
         return self.__elements[self.__index]
 
 
-class DirectedGraphInboundIterator:
-    def __init__(self, graph, vertex: int):
-        """
-        Parses using the index the set of all outbound edges from a given vertex, from the specified DirectedGraph
-        """
-        self.__elements = graph.inbound_edges(vertex)
-        self.__index = 0
-
-    def first(self):
-        """
-        Sets the index back at the beginning of the elements list
-        """
-        self.__index = 0
-
-    def next(self):
-        """
-        Gets the next element's index if in bounds,
-        Otherwise raises a DirectedGraphException
-        """
-        if self.valid():
-            self.__index += 1
-        else:
-            raise DirectedGraphException("Out of inbound edges list bounds!")
-
-    def valid(self):
-        """
-        Checks if the current index is in bounds of the element list length
-        """
-        return self.__index < len(self.__elements)
-
-    def getCurrent(self):
-        """
-        Returns the element at the current index
-        """
-        return self.__elements[self.__index]
-
-
-# DIRECTEDGRAPH CLASS IMPLEMENTATION
+# UNDIRECTEDGRAPH CLASS IMPLEMENTATION
 # Internal Representation Specifications:
-# We keep 3 dictionaries for efficiency in getting the inbound, outbound edges of a vertex, or cost of an edge
-# The inbound/outbound edges dictionary takes as keys the vertices and as values a list of the inbound/outbound edges
+# We keep 2 dictionaries for efficiency in getting the edges of a vertex, and one for the cost of an edge
+# The edges dictionary takes as keys the vertices and as values a list of the edges
 # The costs dictionary takes as keys the edges and as values the costs
 
-class DirectedGraph:
+class UnDirectedGraph:
 
     # CLASS INITIALIZATION
     def __init__(self):
         """
-        Initializes a new DirectedGraph Object
+        Initializes a new UnDirectedGraph Object
         """
 
         # Number of vertices in the Graph is initially zero
-        self.__vertices = 0
-        self.__edges = 0
+        self.__verticesCount = 0
+        self.__edgesCount = 0
 
-        # Inbound / Outbound Neighbours are initially empty
-        self.__inbound = {}
-        self.__outbound = {}
+        # Neighbours are initially empty
+        self.__edges = {}
 
         # Costs of the Edges of the Graphs is initially empty
         self.__costs = {}
@@ -152,20 +116,20 @@ class DirectedGraph:
     # CLASS DIRECTEDGRAPH GENERAL STATISTICS
     def vertices_count(self):
         """
-        Returns the number of vertices inside the Directed Graph
+        Returns the number of vertices inside the UnDirected Graph
         """
-        return self.__vertices
+        return self.__verticesCount
 
     def edges_count(self):
         """
-        Returns the number of edges inside the Directed Graph
+        Returns the number of edges inside the UnDirected Graph
         """
-        return self.__edges
+        return self.__edgesCount
 
     # CLASS DIRECTEDGRAPH PARTICULAR STATISTICS
     def degree(self, vertex: int):
         """
-        Returns the inbound, outbound edges count tuple
+        Returns the neighbouring edges count
         If the Vertex is not inside the Graph, returns None
         :param vertex: Vertex to Search
         """
@@ -173,15 +137,12 @@ class DirectedGraph:
         if not vertex:
             return None
 
-        inbound = 0
-        outbound = 0
+        degree = 0
 
-        if vertex in self.__inbound.keys():
-            inbound = len(self.__inbound[vertex])
-        if vertex in self.__outbound.keys():
-            outbound = len(self.__outbound[vertex])
+        if vertex in self.__edges.keys():
+            degree = len(self.__edges[vertex])
 
-        return inbound, outbound
+        return degree
 
     # CLASS DIRECTEDGRAPH STRUCTURE GETTERS
     def find_vertex(self, number: int):
@@ -191,7 +152,7 @@ class DirectedGraph:
         """
         vertex = Vertex(number)
 
-        if vertex in self.__inbound.keys():
+        if vertex in self.__edges.keys():
             return vertex
         return None
 
@@ -203,12 +164,14 @@ class DirectedGraph:
         """
         source = self.find_vertex(source)
         target = self.find_vertex(target)
-        edge = Edge(source, target)
+        edge = UEdge(source, target)
 
         if (not source) or (not target):
             return None
 
-        if edge in self.__outbound[source]:
+        if edge in self.__edges[source]:
+            return edge
+        if edge in self.__edges[target]:
             return edge
         return None
 
@@ -218,14 +181,14 @@ class DirectedGraph:
         """
 
         vertices_list = []
-        for vertex in self.__inbound.keys():
+        for vertex in self.__edges.keys():
             vertices_list.append(vertex)
 
         return vertices_list.copy()
 
-    def inbound_edges(self, vertex: int):
+    def get_edges(self, vertex: int):
         """
-        Returns all the inbound edges of a specified vertex inside the Directed Graph
+        Returns all the edges of a specified vertex inside the UnDirected Graph
         If the vertex is not inside the Graph, return None
 
         :param vertex: The ID number of the Vertex to analyze
@@ -235,48 +198,24 @@ class DirectedGraph:
         if not vertex:
             return None
 
-        return self.__inbound[vertex].copy()
-
-    def outbound_edges(self, vertex: int):
-        """
-        Returns all the outbound edges of a specified vertex inside the Directed Graph
-        If the vertex is not inside the Graph, return None
-
-        :param vertex: The ID number of the Vertex to analyze
-        """
-
-        vertex = self.find_vertex(vertex)
-        if not vertex:
-            return None
-
-        return self.__outbound[vertex].copy()
+        return self.__edges[vertex].copy()
 
     # CLASS DIRECTEDGRAPH STRUCTURE ITERATORS
     def vertex_iterator(self):
         """
         :return: Returns an Iterator of all Vertices inside the DirectedGraph
         """
-        return DirectedGraphVertexIterator(self)
+        return UnDirectedGraphVertexIterator(self)
 
-    def outbound_iterator(self, vertex: int):
+    def edges_iterator(self, vertex: int):
         """
         :return: Returns an Iterator of all Inbound Edges of a specified vertex, inside the DirectedGraph
                  Raises DirectedGraphException if the Vertex is not inside the Graph
         """
         if not self.find_vertex(vertex):
-            raise DirectedGraphException("Vertex not inside the DirectedGraph")
+            raise UnDirectedGraphException("Vertex not inside the DirectedGraph")
 
-        return DirectedGraphOutboundIterator(self, vertex)
-
-    def inbound_iterator(self, vertex: int):
-        """
-        :return: Returns an Iterator of all Inbound Edges of a specified vertex, inside the DirectedGraph
-                 Raises DirectedGraphException if the Vertex is not inside the Graph
-        """
-        if not self.find_vertex(vertex):
-            raise DirectedGraphException("Vertex not inside the DirectedGraph")
-
-        return DirectedGraphInboundIterator(self, vertex)
+        return UnDirectedGraphEdgesIterator(self, vertex)
 
     # CLASS DIRECTEDGRAPH EDGE COST RELATED METHODS
     # Get / Add/ Modify a cost to an Edge
@@ -292,10 +231,15 @@ class DirectedGraph:
         edge = self.find_edge(source, target)
         if not edge:
             return None
-        if edge not in self.__costs.keys():
+
+        opposite_edge = UEdge(Vertex(target), Vertex(source))
+        if (edge not in self.__costs.keys()) and (opposite_edge not in self.__costs.keys()):
             return None
 
-        return self.__costs[edge]
+        if edge not in self.__costs.keys():
+            return self.__costs[opposite_edge]
+        else:
+            return self.__costs[edge]
 
     def modify_cost(self, source: int, target: int, cost: int):
         """
@@ -329,9 +273,8 @@ class DirectedGraph:
             return None
 
         vertex = Vertex(vertex_number)
-        self.__vertices += 1
-        self.__inbound[vertex] = []
-        self.__outbound[vertex] = []
+        self.__verticesCount += 1
+        self.__edges[vertex] = []
 
         return vertex
 
@@ -351,14 +294,10 @@ class DirectedGraph:
         if not vertex:
             return None
 
-        self.__vertices -= 1
-        for edge in self.__inbound[vertex]:
+        self.__verticesCount -= 1
+        for edge in self.__edges[vertex]:
             self.remove_edge(edge.source.number, edge.target.number)
-        for edge in self.__outbound[vertex]:
-            self.remove_edge(edge.source.number, edge.target.number)
-
-        del self.__inbound[vertex]
-        del self.__outbound[vertex]
+        del self.__edges[vertex]
 
         return vertex
 
@@ -372,19 +311,19 @@ class DirectedGraph:
         """
         source = Vertex(source)
         target = Vertex(target)
-        edge = Edge(source, target)
+        edge = UEdge(source, target)
 
         if self.find_edge(source.number, target.number):
             return None
 
-        self.__edges += 1
-        if target not in self.__inbound:
+        if target not in self.__edges.keys():
             self.add_vertex(target.number)
-        self.__inbound[target].append(edge)
-
-        if source not in self.__outbound:
+        if source not in self.__edges.keys():
             self.add_vertex(source.number)
-        self.__outbound[source].append(edge)
+
+        self.__edgesCount += 1
+        self.__edges[source].append(edge)
+        self.__edges[target].append(edge)
 
         return edge
 
@@ -404,9 +343,8 @@ class DirectedGraph:
         if not edge:
             return None
 
-        self.__edges -= 1
-        self.__inbound[Vertex(target)].remove(edge)
-        self.__outbound[Vertex(source)].remove(edge)
+        self.__edgesCount -= 1
+        self.__edges[Vertex(target)].remove(edge)
 
         return edge.source, edge.target
 
@@ -421,9 +359,7 @@ class DirectedGraph:
         graph_copy = DirectedGraph()
 
         # Copying all vertices and edges
-        for edge in self.__inbound.values():
-            graph_copy.add_edge(edge.source.number, edge.target.number)
-        for edge in self.__outbound.values():
+        for edge in self.__edges.values():
             graph_copy.add_edge(edge.source.number, edge.target.number)
 
         # Copying all costs
