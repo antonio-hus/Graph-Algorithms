@@ -11,6 +11,7 @@ from Assignment_1.src.Domain.undirected_graph import UnDirectedGraph
 from Assignment_1.src.Services.generate_services import *
 from Assignment_1.src.Services.io_file_services import *
 from Assignment_1.src.Services.connected_component_services import *
+from Assignment_1.src.Services.lowest_cost_walk_services import *
 
 
 # UI Class Implementation
@@ -57,6 +58,7 @@ class UI:
         print("3. Edge Operations")
         print("4. Modify the Graph Structure")
         print("5. Connected Components via DFS ( UnDirectedGraphs Only )")
+        print("6. Minimum Path between two Vertices ( DirectedGraphs Only )")
         print("0. Exit")
 
         op = input('>')
@@ -72,6 +74,8 @@ class UI:
             self.graph_modification_screen()
         elif op == '5':
             self.connected_components_screen()
+        elif op == '6':
+            self.minimum_path_screen()
         else:
             pass
 
@@ -312,3 +316,28 @@ class UI:
         print()
         print("Press 'Enter' to go back to Main Menu")
         input()
+
+    def minimum_path_screen(self):
+        UI.clear_screen()
+        try:
+            print("Please enter some data to run the operation:")
+            source = int(input("Number ID of Source Vertex: "))
+            target = int(input("Number ID of Target Vertex: "))
+
+            UI.clear_screen()
+            walk, cost = get_minpath(self.__graph, Vertex(source), Vertex(target))
+
+            print(f"The cost of the walk was: {cost}")
+            for vertex in walk:
+                if vertex != Vertex(target):
+                    print(vertex.number, end=' > ')
+                else:
+                    print(target)
+
+            print()
+            print("Press 'Enter' to go back to Main Menu")
+            input()
+        except Exception as exc:
+            print(f"There has been an error! {exc}")
+            print("Press 'Enter' to go back to the Main Menu")
+            input()
