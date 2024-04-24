@@ -17,8 +17,8 @@ from Assignment_1.src.UI.ui import UI
 def start():
 
     # OBJECT INITIALIZATION
-    graph = DirectedGraph()
-    # graph = UnDirectedGraph()
+    # graph = DirectedGraph()
+    graph = UnDirectedGraph()
     display = UI(graph)
 
     # GENERATE RANDOM GRAPH DATA

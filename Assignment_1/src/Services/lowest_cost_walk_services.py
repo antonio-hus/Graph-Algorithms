@@ -12,8 +12,6 @@ from Assignment_1.src.Domain.vertex import Vertex
 from Assignment_1.src.Domain.edge import Edge, UEdge
 from Assignment_1.src.Domain.directed_graph import (DirectedGraph, DirectedGraphVertexIterator,
                                                       DirectedGraphInboundIterator, DirectedGraphOutboundIterator, DirectedGraphException)
-from Assignment_1.src.Domain.undirected_graph import (UnDirectedGraph, UnDirectedGraphVertexIterator,
-                                                      UnDirectedGraphEdgesIterator, UnDirectedGraphException)
 
 
 # Definition Section

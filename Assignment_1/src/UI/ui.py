@@ -12,6 +12,8 @@ from Assignment_1.src.Services.generate_services import *
 from Assignment_1.src.Services.io_file_services import *
 from Assignment_1.src.Services.connected_component_services import *
 from Assignment_1.src.Services.lowest_cost_walk_services import *
+from Assignment_1.src.Services.minimum_spanning_tree import *
+from Assignment_1.src.Services.minimum_cost_hamiltonian_cycle import *
 
 
 # UI Class Implementation
@@ -59,6 +61,7 @@ class UI:
         print("4. Modify the Graph Structure")
         print("5. Connected Components via DFS ( UnDirectedGraphs Only )")
         print("6. Minimum Path between two Vertices ( DirectedGraphs Only )")
+        print("7. Minimum Spanning Tree ( Prims Algorithm - UnDirectedGraphs Only )")
         print("0. Exit")
 
         op = input('>')
@@ -76,6 +79,8 @@ class UI:
             self.connected_components_screen()
         elif op == '6':
             self.minimum_path_screen()
+        elif op == '7':
+            self.minimum_spanning_tree_screen()
         else:
             pass
 
@@ -333,6 +338,24 @@ class UI:
                     print(vertex.number, end=' > ')
                 else:
                     print(target)
+
+            print()
+            print("Press 'Enter' to go back to Main Menu")
+            input()
+        except Exception as exc:
+            print(f"There has been an error! {exc}")
+            print("Press 'Enter' to go back to the Main Menu")
+            input()
+
+    def minimum_spanning_tree_screen(self):
+        UI.clear_screen()
+        try:
+
+            print("Below is the minimum spanning tree:")
+            edges = prim_minimum_spanning_tree(self.__graph)
+
+            for edge in edges:
+                print(f"{edge[0].number} {edge[1].number} {edge[2]}")
 
             print()
             print("Press 'Enter' to go back to Main Menu")
