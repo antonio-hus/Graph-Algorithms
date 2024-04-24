@@ -5,6 +5,7 @@
 #
 
 # IMPORTS SECTION
+from itertools import combinations
 from Assignment_1.src.Domain.vertex import Vertex
 from Assignment_1.src.Domain.edge import Edge, UEdge
 from Assignment_1.src.Domain.directed_graph import (DirectedGraph, DirectedGraphVertexIterator,
@@ -15,54 +16,79 @@ from Assignment_1.src.Domain.directed_graph import (DirectedGraph, DirectedGraph
 # Define a constant for infinity (representing unreachable nodes)
 INF = 10000000000
 
+# TSP - Travelling Salesman Problem
+# Given a list of cities and the distances between each pair of cities,
+# what is the shortest possible route that visits each city exactly once and returns to the origin city?
+
+# NOTE:
+# frozenset() is used instead of set, due to the ease of excluding elements from its set, and being immutable
+
 
 # Solving the Traveling Salesman Problem
-def travelling_salesman_problem(graph: DirectedGraph, start_vertex: Vertex):
-    vertices_count = graph.vertices_count()
+def travelling_salesman_problem(graph: DirectedGraph, start_vertex: int):
 
-    # Initialize the matrix
-    d = {}
-    for vertex in graph.vertices():
-        d[vertex] = [INF for _ in range(vertices_count)]
+    # Vertices
+    n = graph.vertices_count()
+    vertices = [vertex.number for vertex in graph.vertices()]
+    vertices = frozenset(vertices)
 
-    # Only the start vertex is accessible with a path length of 0 and a cost of 0
-    d[start_vertex][0] = 0
+    # Initialize g dictionary to store the minimum costs
+    g = {}
 
-    # Keeping track of the parents tree
+    # Initialize parent dictionary to store the parents
     parent = {}
 
-    # Filling in the matrix by relaxing the edges verticesCount - 1 times
-    for k in range(1, vertices_count):
-        for vertex in graph.vertices():
-            for neighbor_edge in graph.outbound_edges(vertex.number):
-                neighbor = neighbor_edge.target
-                cost = graph.get_cost(vertex.number, neighbor.number)
-                if d[vertex][k - 1] + cost < d[neighbor][k]:
-                    d[neighbor][k] = d[vertex][k - 1] + cost
-                    parent[neighbor] = vertex
+    # Calculate costs for sets of size 0 (base case)
+    for k in vertices-{start_vertex}:
+        g[(frozenset([k]), k)] = graph.get_cost(start_vertex, k)
+        parent[(frozenset([k]), k)] = start_vertex
 
-    # Check for negative cycles
-    for vertex in graph.vertices():
-        for neighbor_edge in graph.outbound_edges(vertex.number):
-            neighbor = neighbor_edge.target
-            cost = graph.get_cost(vertex.number, neighbor.number)
-            if d[vertex][vertices_count - 1] + cost < d[neighbor][vertices_count - 2]:
-                raise DirectedGraphException("Negative cost cycle detected!")
+    # Iterate over all set sizes
+    for size in range(2, n):
+
+        # Iterate over all subsets of size s
+        for include_set in combinations(vertices-{start_vertex}, size):
+            include_set = frozenset(include_set)
+
+            for vertex in include_set:
+
+                # Initialize minimum cost and best predecessor
+                min_cost = INF
+                best_previous_vertex = None
+
+                # Find minimum cost of reaching the vertex from include_set
+                for previous_vertex in include_set:
+                    if vertex != previous_vertex:
+                        cost = g.get((include_set-{vertex}, previous_vertex)) + graph.get_cost(previous_vertex, vertex)
+                        if cost < min_cost:
+                            min_cost = cost
+                            best_previous_vertex = previous_vertex
+                g[(include_set, vertex)] = min_cost
+                parent[(include_set, vertex)] = best_previous_vertex
 
     # Find the minimum cost Hamiltonian cycle
     min_cost = INF
-    min_cycle = None
-    for vertex in graph.vertices():
-        cost = d[vertex][vertices_count - 1]
-        if cost < min_cost:
-            min_cost = cost
-            min_cycle = vertex
+    best_end_vertex = None
+    for vertex in vertices:
+        if vertex != start_vertex:
+            cost = g.get((frozenset(vertices) - {start_vertex}, vertex), INF) + graph.get_cost(vertex, start_vertex)
+            if cost < min_cost:
+                min_cost = cost
+                best_end_vertex = vertex
 
-    # Reconstruct the minimum cost cycle
-    cycle = [min_cycle]
-    current_vertex = min_cycle
-    while len(cycle) < vertices_count:
-        current_vertex = parent[current_vertex]
-        cycle.append(current_vertex)
+    # Rebuilding the path
+    path = [start_vertex, best_end_vertex]
+    include_set = frozenset(vertices) - {start_vertex}
+    while len(include_set) > 0:
+        vertex = parent.get((include_set, best_end_vertex))
+        if vertex is None:
+            return INF, None
+        path.append(vertex)
+        include_set -= {best_end_vertex}
+        best_end_vertex = vertex
+    path.reverse()
 
-    return cycle, min_cost
+    # Returning the result
+    return min_cost, path
+
+

@@ -62,6 +62,7 @@ class UI:
         print("5. Connected Components via DFS ( UnDirectedGraphs Only )")
         print("6. Minimum Path between two Vertices ( DirectedGraphs Only )")
         print("7. Minimum Spanning Tree ( Prims Algorithm - UnDirectedGraphs Only )")
+        print("8. Minimum Cost Hamiltonian Cycle ( TSP - DirectedGraphs Only )")
         print("0. Exit")
 
         op = input('>')
@@ -81,6 +82,8 @@ class UI:
             self.minimum_path_screen()
         elif op == '7':
             self.minimum_spanning_tree_screen()
+        elif op == '8':
+            self.minimum_cost_hamiltonian_cycle_screen()
         else:
             pass
 
@@ -356,6 +359,33 @@ class UI:
 
             for edge in edges:
                 print(f"{edge[0].number} {edge[1].number} {edge[2]}")
+
+            print()
+            print("Press 'Enter' to go back to Main Menu")
+            input()
+        except Exception as exc:
+            print(f"There has been an error! {exc}")
+            print("Press 'Enter' to go back to the Main Menu")
+            input()
+
+    def minimum_cost_hamiltonian_cycle_screen(self):
+        UI.clear_screen()
+        try:
+            print("Please enter some data to run the operation:")
+            source = int(input("Number ID of Source Vertex: "))
+
+            UI.clear_screen()
+            cost, cycle = travelling_salesman_problem(self.__graph, source)
+
+            print(f"The cost of the hamiltonian cycle was: {cost}")
+            k = 0
+            for vertex in cycle:
+                if k == 0:
+                    print(vertex, end='')
+                    k += 1
+                else:
+                    print(end=' > ')
+                    print(vertex, end='')
 
             print()
             print("Press 'Enter' to go back to Main Menu")
